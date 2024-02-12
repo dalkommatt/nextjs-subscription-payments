@@ -6,7 +6,7 @@ import { createClient } from '@/utils/supabase/server';
 import { createOrRetrieveCustomer } from '@/utils/supabase/admin';
 import {
   getURL,
-  getErrorRedirect,
+  sendErrorToast,
   calculateTrialEndUnixTimestamp
 } from '@/utils/helpers';
 import { Tables } from '@/types_db';
@@ -101,7 +101,7 @@ export async function checkoutWithStripe(
   } catch (error) {
     if (error instanceof Error) {
       return {
-        errorRedirect: getErrorRedirect(
+        errorRedirect: sendErrorToast(
           redirectPath,
           error.message,
           'Please try again later or contact a system administrator.'
@@ -109,7 +109,7 @@ export async function checkoutWithStripe(
       };
     } else {
       return {
-        errorRedirect: getErrorRedirect(
+        errorRedirect: sendErrorToast(
           redirectPath,
           'An unknown error occurred.',
           'Please try again later or contact a system administrator.'
@@ -165,13 +165,13 @@ export async function createStripePortal(currentPath: string) {
   } catch (error) {
     if (error instanceof Error) {
       console.error(error);
-      return getErrorRedirect(
+      return sendErrorToast(
         currentPath,
         error.message,
         'Please try again later or contact a system administrator.'
       );
     } else {
-      return getErrorRedirect(
+      return sendErrorToast(
         currentPath,
         'An unknown error occurred.',
         'Please try again later or contact a system administrator.'

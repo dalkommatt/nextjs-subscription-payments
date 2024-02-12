@@ -5,7 +5,7 @@ import LogoCloud from '@/components/ui/LogoCloud';
 import type { Tables } from '@/types_db';
 import { getStripe } from '@/utils/stripe/client';
 import { checkoutWithStripe } from '@/utils/stripe/server';
-import { getErrorRedirect } from '@/utils/helpers';
+import { sendErrorToast } from '@/utils/helpers';
 import { User } from '@supabase/supabase-js';
 import cn from 'classnames';
 import { useRouter, usePathname } from 'next/navigation';
@@ -67,7 +67,7 @@ export default function Pricing({ user, products, subscription }: Props) {
     if (!sessionId) {
       setPriceIdLoading(undefined);
       return router.push(
-        getErrorRedirect(
+        sendErrorToast(
           currentPath,
           'An unknown error occurred.',
           'Please try again later or contact a system administrator.'

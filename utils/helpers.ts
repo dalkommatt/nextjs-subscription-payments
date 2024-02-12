@@ -1,4 +1,5 @@
 import type { Tables } from '@/types_db';
+import { redirect } from 'next/navigation';
 
 type Price = Tables<'prices'>;
 
@@ -69,66 +70,28 @@ export const calculateTrialEndUnixTimestamp = (
   return Math.floor(trialEnd.getTime() / 1000); // Convert to Unix timestamp in seconds
 };
 
-const toastKeyMap: { [key: string]: string[] } = {
-  status: ['status', 'status_description'],
-  error: ['error', 'error_description']
+export function isValidEmail(email: string) {
+  var regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+  return regex.test(email);
+}
+
+
+export const sendStatusToast = (
+  pathname: string,
+  status: string,
+  description: string
+) => {
+  redirect(
+    `${pathname}?status=${encodeURI(status)}&status_description=${encodeURI(description)}`
+  );
 };
 
-const getToastRedirect = (
-  path: string,
-  toastType: string,
-  toastName: string,
-  toastDescription: string = '',
-  disableButton: boolean = false,
-  arbitraryParams: string = ''
-): string => {
-  const [nameKey, descriptionKey] = toastKeyMap[toastType];
-
-  let redirectPath = `${path}?${nameKey}=${encodeURIComponent(toastName)}`;
-
-  if (toastDescription) {
-    redirectPath += `&${descriptionKey}=${encodeURIComponent(toastDescription)}`;
-  }
-
-  if (disableButton) {
-    redirectPath += `&disable_button=true`;
-  }
-
-  if (arbitraryParams) {
-    redirectPath += `&${arbitraryParams}`;
-  }
-
-  return redirectPath;
+export const sendErrorToast = (
+  pathname: string,
+  error: string,
+  description: string
+) => {
+  redirect(
+    `${pathname}?error=${encodeURI(error)}&error_description=${encodeURI(description)}`
+  );
 };
-
-export const getStatusRedirect = (
-  path: string,
-  statusName: string,
-  statusDescription: string = '',
-  disableButton: boolean = false,
-  arbitraryParams: string = ''
-) =>
-  getToastRedirect(
-    path,
-    'status',
-    statusName,
-    statusDescription,
-    disableButton,
-    arbitraryParams
-  );
-
-export const getErrorRedirect = (
-  path: string,
-  errorName: string,
-  errorDescription: string = '',
-  disableButton: boolean = false,
-  arbitraryParams: string = ''
-) =>
-  getToastRedirect(
-    path,
-    'error',
-    errorName,
-    errorDescription,
-    disableButton,
-    arbitraryParams
-  );

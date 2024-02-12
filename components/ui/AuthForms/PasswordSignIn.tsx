@@ -1,9 +1,8 @@
 'use client';
 
 import Button from '@/components/ui/Button';
+import { signInWithPassword } from '@/utils/actions/sign-in-password';
 import Link from 'next/link';
-import { signInWithPassword } from '@/utils/auth-helpers/server';
-import { handleRequest } from '@/utils/auth-helpers/client';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
@@ -18,20 +17,18 @@ export default function PasswordSignIn({
   redirectMethod
 }: PasswordSignInProps) {
   const router = redirectMethod === 'client' ? useRouter() : null;
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    setIsSubmitting(true); // Disable the button while the request is being handled
-    await handleRequest(e, signInWithPassword, router);
-    setIsSubmitting(false);
-  };
+  const [loading, setLoading] = useState(false);
 
   return (
     <div className="my-8">
       <form
         noValidate={true}
         className="mb-4"
-        onSubmit={(e) => handleSubmit(e)}
+        action={async (formData: FormData) => {
+          setLoading(true);
+          await signInWithPassword(formData);
+          setLoading(false);
+        }}
       >
         <div className="grid gap-2">
           <div className="grid gap-1">

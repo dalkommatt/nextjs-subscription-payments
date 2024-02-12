@@ -2,26 +2,23 @@
 
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
-import { updateName } from '@/utils/auth-helpers/server';
-import { handleRequest } from '@/utils/auth-helpers/client';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { updateName } from '@/utils/actions/update-name';
+import { useOptimistic, useState } from 'react';
 
-export default function NameForm({ userName }: { userName: string }) {
-  const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    setIsSubmitting(true);
-    // Check if the new name is the same as the old name
-    if (e.currentTarget.fullName.value === userName) {
-      e.preventDefault();
-      setIsSubmitting(false);
-      return;
+export default function NameForm({
+  userID,
+  userName
+}: {
+  userID: string;
+  userName: string;
+}) {
+  const [loading, setLoading] = useState(false);
+  const [optimisticUserName, setOptimisticUserName] = useOptimistic(
+    userName,
+    (_, newName: string) => {
+      return newName;
     }
-    handleRequest(e, updateName, router);
-    setIsSubmitting(false);
-  };
+  );
 
   return (
     <Card
@@ -34,7 +31,7 @@ export default function NameForm({ userName }: { userName: string }) {
             variant="slim"
             type="submit"
             form="nameForm"
-            loading={isSubmitting}
+            loading={loading}
           >
             Update Name
           </Button>
@@ -42,12 +39,21 @@ export default function NameForm({ userName }: { userName: string }) {
       }
     >
       <div className="mt-8 mb-4 text-xl font-semibold">
-        <form id="nameForm" onSubmit={(e) => handleSubmit(e)}>
+        <form
+          id="nameForm"
+          action={async (formData: FormData) => {
+            setLoading(true);
+            const fullName = String(formData.get('fullName')).trim();
+            setOptimisticUserName(fullName);
+            await updateName(fullName, userID);
+            setLoading(false);
+          }}
+        >
           <input
             type="text"
             name="fullName"
             className="w-1/2 p-3 rounded-md bg-zinc-800"
-            defaultValue={userName}
+            defaultValue={optimisticUserName}
             placeholder="Your name"
             maxLength={64}
           />
